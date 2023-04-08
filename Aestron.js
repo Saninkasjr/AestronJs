@@ -1,3 +1,4 @@
+//our framework 
 class DomManipulator {
   constructor(selector) {
     if (typeof selector === 'string') {
@@ -102,93 +103,295 @@ class DomManipulator {
     });
     return this;
   }
-   fadeIn(duration = 1000) {
-           this.elements.forEach(element => {
-                   element.style.opacity = 0;
-                   element.style.display = "block";
-                   let start = null;
-                   const step = timestamp => {
-                           if (!start) start = timestamp;
-                           const progress = timestamp - start;
-                           element.style.opacity = Math.min(progress / duration, 1);
-                           if (progress < duration) {
-                                   window.requestAnimationFrame(step);
-                           }
-                   };
-                   window.requestAnimationFrame(step);
-           });
-           return this;
-   }
-  
-   fadeOut(duration = 1000) {
-           this.elements.forEach(element => {
-                   element.style.opacity = 1;
-                   let start = null;
-                   const step = timestamp => {
-                           if (!start) start = timestamp;
-                           const progress = timestamp - start;
-                           element.style.opacity = Math.max(1 - progress / duration, 0);
-                           if (progress < duration) {
-                                   window.requestAnimationFrame(step);
-                           } else {
-                                   element.style.display = "none";
-                           }
-                   };
-                   window.requestAnimationFrame(step);
-           });
-           return this;
-   }
-  
-   slideIn(duration = 1000, distance = "100%") {
-           this.elements.forEach(element => {
-                   element.style.transform = `translateX(${distance})`;
-                   element.style.display = "block";
-                   let start = null;
-                   const step = timestamp => {
-                           if (!start) start = timestamp;
-                           const progress = timestamp - start;
-                           element.style.transform = `translateX(${Math.min(
-             progress / duration,
-             1
-           ) * parseInt(distance)}px)`;
-                           if (progress < duration) {
-                                   window.requestAnimationFrame(step);
-                           }
-                   };
-                   window.requestAnimationFrame(step);
-           });
-           return this;
-   }
-  
-   slideOut(duration = 1000, distance = "100%") {
-           this.elements.forEach(element => {
-                   element.style.transform = "translateX(0)";
-                   let start = null;
-                   const step = timestamp => {
-                           if (!start) start = timestamp;
-                           const progress = timestamp - start;
-                           element.style.transform = `translateX(${Math.max(
-             1 - progress / duration,
-             0
-           ) * parseInt(distance)}px)`;
-                           if (progress < duration) {
-                                   window.requestAnimationFrame(step);
-                           } else {
-                                   element.style.display = "none";
-                           }
-                   };
-                   window.requestAnimationFrame(step);
-           });
-           return this;
-   }
- }
+  appendElement(tagName, attributes = {}, text = '') {
+          const newElement = document.createElement(tagName);
+          Object.entries(attributes).forEach(([key, value]) => {
+                  newElement.setAttribute(key, value);
+          });
+          newElement.textContent = text;
+          this.elements.forEach(element => {
+                  element.appendChild(newElement);
+          });
+          return this;
+  }
+  getCssValue(property) {
+          return window.getComputedStyle(this.elements[0]).getPropertyValue(property);
+  }
+   getPosition() {
+    const element = this.elements[0];
+    const parent = element.offsetParent;
+    let position = {
+      top: element.offsetTop,
+      left: element.offsetLeft
+    };
 
-function $(selector) {
-  return new DomManipulator(selector);
+    while (parent !== null) {
+      position.top += parent.offsetTop;
+      position.left += parent.offsetLeft;
+      parent = parent.offsetParent;
+    }
+
+    return position;
+  }
+  find(selector) {
+  const descendants = this.elements.flatMap(element => Array.from(element.querySelectorAll(selector)));
+  return descendants.length ? new DomManipulator(descendants) : $([]);
 }
 
+mergeElement(tagName, {
+    attributes = {},
+    text = '',
+    replace = false,
+    targetSelector = null,
+    code = '',
+    css = '',
+    textNode = '',
+    classes = [],
+    dataset = {},
+    events = {},
+    callback = null,
+    children = [],
+    style = {},
+  } = {}) {
+    const newElement = document.createElement(tagName);
+    Object.entries(attributes).forEach(([key, value]) => {
+      newElement.setAttribute(key, value);
+    });
+    if (textNode) {
+      const textNodeElement = document.createTextNode(textNode);
+      newElement.appendChild(textNodeElement);
+    } else {
+      newElement.textContent = text;
+    }
+    if (css) {
+      newElement.style.cssText = css;
+    } else {
+      Object.entries(style).forEach(([property, value]) => {
+        newElement.style[property] = value;
+      });
+    }
+    if (classes.length) {
+      classes.forEach(className => {
+        newElement.classList.add(className);
+      });
+    }
+    Object.entries(dataset).forEach(([key, value]) => {
+      newElement.dataset[key] = value;
+    });
+    Object.entries(events).forEach(([event, handler]) => {
+      newElement.addEventListener(event, handler);
+    });
+    children.forEach(child => {
+      newElement.appendChild(child);
+    });
+    if (code) {
+      newElement.innerHTML = code;
+    }
+    if (callback) {
+      callback(newElement);
+    }
+    if (replace && targetSelector) {
+      const oldElement = document.querySelector(targetSelector);
+      if (oldElement) {
+        oldElement.replaceWith(newElement);
+        return new DomManipulator(targetSelector);
+      }
+    } else {
+      this.elements.forEach(element => {
+        element.appendChild(newElement);
+      });
+      return this;
+    }
+    function add(selector, options) {
+  const target = document.querySelector(selector);
+  if (!target) return;
+
+  if (options.text) {
+    target.textContent = options.text;
+  }
+
+  if (options.classes && options.classes.length > 0) {
+    target.classList.add(...options.classes);
+  }
+
+  if (options.attributes) {
+    Object.keys(options.attributes).forEach(key => {
+      target.setAttribute(key, options.attributes[key]);
+    });
+  }
+
+  if (options.dataset) {
+    Object.keys(options.dataset).forEach(key => {
+      target.dataset[key] = options.dataset[key];
+    });
+  }
+
+  if (options.children && options.children.length > 0) {
+    options.children.forEach(child => {
+      const childElem = document.createElement(child.tagName);
+      if (child.text) {
+        childElem.textContent = child.text;
+      }
+      if (child.attributes) {
+        Object.keys(child.attributes).forEach(key => {
+          childElem.setAttribute(key, child.attributes[key]);
+        });
+      }
+      if (child.dataset) {
+        Object.keys(child.dataset).forEach(key => {
+          childElem.dataset[key] = child.dataset[key];
+        });
+      }
+      if (child.events) {
+        Object.keys(child.events).forEach(key => {
+          childElem.addEventListener(key, child.events[key]);
+        });
+      }
+      target.appendChild(childElem);
+    });
+  }
+
+  if (options.replace) {
+    const newElem = document.createElement(options.tagName);
+    if (options.text) {
+      newElem.textContent = options.text;
+    }
+    if (options.classes && options.classes.length > 0) {
+      newElem.classList.add(...options.classes);
+    }
+    if (options.attributes) {
+      Object.keys(options.attributes).forEach(key => {
+        newElem.setAttribute(key, options.attributes[key]);
+      });
+    }
+    if (options.dataset) {
+      Object.keys(options.dataset).forEach(key => {
+        newElem.dataset[key] = options.dataset[key];
+      });
+    }
+    if (options.children && options.children.length > 0) {
+      options.children.forEach(child => {
+        const childElem = document.createElement(child.tagName);
+        if (child.text) {
+          childElem.textContent = child.text;
+        }
+        if (child.attributes) {
+          Object.keys(child.attributes).forEach(key => {
+            childElem.setAttribute(key, child.attributes[key]);
+          });
+        }
+        if (child.dataset) {
+          Object.keys(child.dataset).forEach(key => {
+            childElem.dataset[key] = child.dataset[key];
+          });
+        }
+        if (child.events) {
+          Object.keys(child.events).forEach(key => {
+            childElem.addEventListener(key, child.events[key]);
+          });
+        }
+        newElem.appendChild(childElem);
+      });
+    }
+    target.parentNode.replaceChild(newElem, target);
+  }
+}
+
+  }
+
+ fadeIn(duration = 1000) {
+         this.elements.forEach(element => {
+                 element.style.opacity = 0;
+                 element.style.display = "block";
+                 let start = null;
+                 const step = timestamp => {
+                         if (!start) start = timestamp;
+                         const progress = timestamp - start;
+                         element.style.opacity = Math.min(progress / duration, 1);
+                         if (progress < duration) {
+                                 window.requestAnimationFrame(step);
+                         }
+                 };
+                 window.requestAnimationFrame(step);
+         });
+         return this;
+ }
+
+ fadeOut(duration = 1000) {
+         this.elements.forEach(element => {
+                 element.style.opacity = 1;
+                 let start = null;
+                 const step = timestamp => {
+                         if (!start) start = timestamp;
+                         const progress = timestamp - start;
+                         element.style.opacity = Math.max(1 - progress / duration, 0);
+                         if (progress < duration) {
+                                 window.requestAnimationFrame(step);
+                         } else {
+                                 element.style.display = "none";
+                         }
+                 };
+                 window.requestAnimationFrame(step);
+         });
+         return this;
+ }
+
+ slideIn(duration = 1000, distance = "100%") {
+         this.elements.forEach(element => {
+                 element.style.transform = `translateX(${distance})`;
+                 element.style.display = "block";
+                 let start = null;
+                 const step = timestamp => {
+                         if (!start) start = timestamp;
+                         const progress = timestamp - start;
+                         element.style.transform = `translateX(${Math.min(
+           progress / duration,
+           1
+         ) * parseInt(distance)}px)`;
+                         if (progress < duration) {
+                                 window.requestAnimationFrame(step);
+                         }
+                 };
+                 window.requestAnimationFrame(step);
+         });
+         return this;
+ }
+
+ slideOut(duration = 1000, distance = "100%") {
+         this.elements.forEach(element => {
+                 element.style.transform = "translateX(0)";
+                 let start = null;
+                 const step = timestamp => {
+                         if (!start) start = timestamp;
+                         const progress = timestamp - start;
+                         element.style.transform = `translateX(${Math.max(
+           1 - progress / duration,
+           0
+         ) * parseInt(distance)}px)`;
+                         if (progress < duration) {
+                                 window.requestAnimationFrame(step);
+                         } else {
+                                 element.style.display = "none";
+                         }
+                 };
+                 window.requestAnimationFrame(step);
+         });
+         return this;
+ }
+}
+
+
+
+function el(selector) {
+  return new DomManipulator(selector);
+}
+function $(selector) {
+        return new DomManipulator(selector);
+}
 window.Aestron = {
   DomManipulator,
+  el,
   $
 };
+
 
