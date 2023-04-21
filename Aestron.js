@@ -1,143 +1,194 @@
-//our framework 
+//AestronJs.
 class DomManipulator {
-  constructor(selector) {
-    if (typeof selector === 'string') {
-      this.elements = Array.from(document.querySelectorAll(selector));
-    } else if (selector instanceof HTMLElement) {
-      this.elements = [selector];
-    } else if (Array.isArray(selector)) {
-      this.elements = selector.filter(item => item instanceof HTMLElement);
-    } else {
-      throw new Error('Invalid selector');
-    }
+  // This constructor function takes in a selector as a parameter and returns an instance of the class with elements matching the selector
+
+constructor(selector) {
+  // If the selector is a string, find all elements that match the selector using querySelectorAll method and store them in an array
+  if (typeof selector === 'string') {
+    this.elements = Array.from(document.querySelectorAll(selector));
+  } 
+  // If the selector is an HTMLElement, store it in an array
+  else if (selector instanceof HTMLElement) {
+    this.elements = [selector];
+  } 
+  // If the selector is an array, filter out all elements that are not an instance of HTMLElement and store them in an array
+  else if (Array.isArray(selector)) {
+    this.elements = selector.filter(item => item instanceof HTMLElement);
+  } 
+  // If the selector is none of the above, throw an error
+  else {
+    throw new Error('Invalid selector');
+  }
+}
+
+  // Add a class to all elements in the collection
+addClass(className) {
+  // Loop through all elements in the collection
+  this.elements.forEach(element => {
+    // Add the class to the element's class list
+    element.classList.add(className);
+  });
+  // Return the collection to enable chaining
+  return this;
+}
+
+// Remove a class from all elements in the collection
+removeClass(className) {
+  // Loop through all elements in the collection
+  this.elements.forEach(element => {
+    // Remove the class from the element's class list
+    element.classList.remove(className);
+  });
+  // Return the collection to enable chaining
+  return this;
+}
+
+// Toggle a class on all elements in the collection
+toggleClass(className) {
+  // Loop through all elements in the collection
+  this.elements.forEach(element => {
+    // Toggle the class on the element's class list
+    element.classList.toggle(className);
+  });
+  // Return the collection to enable chaining
+  return this;
+}
+
+  // A function to set or get the text content of an element
+text(value) {
+  if (value !== undefined) { // Check if value is defined
+    this.elements.forEach(element => element.textContent = value); // Set text content to the provided value for each element
+    return this; // Return the object for chaining
+  } else {
+    return this.elements[0].textContent; // Return the text content of the first element
+  }
+}
+
+// A function to set or get the HTML content of an element
+html(value) {
+  if (value !== undefined) { // Check if value is defined
+    this.elements.forEach(element => element.innerHTML = value); // Set HTML content to the provided value for each element
+    return this; // Return the object for chaining
+  } else {
+    return this.elements[0].innerHTML; // Return the HTML content of the first element
+  }
+}
+
+// A function to attach an event listener to an element
+on(event, callback) {
+  this.elements.forEach(element => element.addEventListener(event, callback)); // Add event listener to each element
+  return this; // Return the object for chaining
+}
+
+// A function to remove an event listener from an element
+off(event, callback) {
+  this.elements.forEach(element => element.removeEventListener(event, callback)); // Remove event listener from each element
+  return this; // Return the object for chaining
+}
+
+  // A function to add an animation class to an element
+animate(animationName) {
+  const animationClasses = { // Object containing animation classes
+    fadeIn: 'fade-in',
+    fadeOut: 'fade-out',
+    slideUp: 'slide-up',
+    slideDown: 'slide-down',
+    slideLeft: 'slide-left',
+    slideRight: 'slide-right',
+    zoomIn: 'zoom-in',
+    zoomOut: 'zoom-out'
+  };
+
+  if (animationClasses[animationName]) { // Check if the animation name is valid
+    this.elements.forEach(element => element.classList.add(animationClasses[animationName])); // Add animation class to each element
+  } else {
+    throw new Error(`Invalid animation name: ${animationName}`); // Throw an error for invalid animation name
   }
 
-  addClass(className) {
-    this.elements.forEach(element => element.classList.add(className));
-    return this;
+  return this; // Return the object for chaining
+}
+
+// A function to remove an animation class from an element
+stopAnimation(animationName) {
+  const animationClasses = { // Object containing animation classes
+    fadeIn: 'fade-in',
+    fadeOut: 'fade-out',
+    slideUp: 'slide-up',
+    slideDown: 'slide-down',
+    slideLeft: 'slide-left',
+    slideRight: 'slide-right',
+    zoomIn: 'zoom-in',
+    zoomOut: 'zoom-out'
+  };
+
+  if (animationClasses[animationName]) { // Check if the animation name is valid
+    this.elements.forEach(element => element.classList.remove(animationClasses[animationName])); // Remove animation class from each element
+  } else {
+    throw new Error(`Invalid animation name: ${animationName}`); // Throw an error for invalid animation name
   }
 
-  removeClass(className) {
-    this.elements.forEach(element => element.classList.remove(className));
-    return this;
-  }
+  return this; // Return the object for chaining
+}
 
-  toggleClass(className) {
-    this.elements.forEach(element => element.classList.toggle(className));
-    return this;
-  }
 
-  text(value) {
-    if (value !== undefined) {
-      this.elements.forEach(element => element.textContent = value);
-      return this;
-    } else {
-      return this.elements[0].textContent;
-    }
-  }
-
-  html(value) {
-    if (value !== undefined) {
-      this.elements.forEach(element => element.innerHTML = value);
-      return this;
-    } else {
-      return this.elements[0].innerHTML;
-    }
-  }
-
-  on(event, callback) {
-    this.elements.forEach(element => element.addEventListener(event, callback));
-    return this;
-  }
-
-  off(event, callback) {
-    this.elements.forEach(element => element.removeEventListener(event, callback));
-    return this;
-  }
-
-  animate(animationName) {
-    const animationClasses = {
-      fadeIn: 'fade-in',
-      fadeOut: 'fade-out',
-      slideUp: 'slide-up',
-      slideDown: 'slide-down',
-      slideLeft: 'slide-left',
-      slideRight: 'slide-right',
-      zoomIn: 'zoom-in',
-      zoomOut: 'zoom-out'
-    };
-
-    if (animationClasses[animationName]) {
-      this.elements.forEach(element => element.classList.add(animationClasses[animationName]));
-    } else {
-      throw new Error(`Invalid animation name: ${animationName}`);
-    }
-
-    return this;
-  }
-
-  stopAnimation(animationName) {
-    const animationClasses = {
-      fadeIn: 'fade-in',
-      fadeOut: 'fade-out',
-      slideUp: 'slide-up',
-      slideDown: 'slide-down',
-      slideLeft: 'slide-left',
-      slideRight: 'slide-right',
-      zoomIn: 'zoom-in',
-      zoomOut: 'zoom-out'
-    };
-
-    if (animationClasses[animationName]) {
-      this.elements.forEach(element => element.classList.remove(animationClasses[animationName]));
-    } else {
-      throw new Error(`Invalid animation name: ${animationName}`);
-    }
-
-    return this;
-  }
-
-  css(property, value) {
+  // Set a CSS property on all selected elements
+css(property, value) {
     this.elements.forEach(element => {
       element.style[property] = value;
     });
     return this;
-  }
-  appendElement(tagName, attributes = {}, text = '') {
-          const newElement = document.createElement(tagName);
-          Object.entries(attributes).forEach(([key, value]) => {
-                  newElement.setAttribute(key, value);
-          });
-          newElement.textContent = text;
-          this.elements.forEach(element => {
-                  element.appendChild(newElement);
-          });
-          return this;
-  }
-  getCssValue(property) {
-          return window.getComputedStyle(this.elements[0]).getPropertyValue(property);
-  }
-   getPosition() {
+}
+
+// Append a new element to each selected element
+appendElement(tagName, attributes = {}, text = '') {
+    const newElement = document.createElement(tagName);
+    // Set attributes on the new element
+    Object.entries(attributes).forEach(([key, value]) => {
+        newElement.setAttribute(key, value);
+    });
+    newElement.textContent = text;
+    // Append the new element to each selected element
+    this.elements.forEach(element => {
+        element.appendChild(newElement);
+    });
+    return this;
+}
+
+// Get the value of a CSS property for the first selected element
+getCssValue(property) {
+    return window.getComputedStyle(this.elements[0]).getPropertyValue(property);
+}
+
+// Get the position of the first selected element relative to its offset parent
+getPosition() {
     const element = this.elements[0];
     const parent = element.offsetParent;
     let position = {
-      top: element.offsetTop,
-      left: element.offsetLeft
+        top: element.offsetTop,
+        left: element.offsetLeft
     };
 
     while (parent !== null) {
-      position.top += parent.offsetTop;
-      position.left += parent.offsetLeft;
-      parent = parent.offsetParent;
+        position.top += parent.offsetTop;
+        position.left += parent.offsetLeft;
+        parent = parent.offsetParent;
     }
 
     return position;
-  }
-  find(selector) {
-  const descendants = this.elements.flatMap(element => Array.from(element.querySelectorAll(selector)));
-  return descendants.length ? new DomManipulator(descendants) : $([]);
 }
 
+// Find all descendants of the selected elements matching a selector
+find(selector) {
+    const descendants = this.elements.flatMap(element => Array.from(element.querySelectorAll(selector)));
+    // Return a new DomManipulator object containing the matching descendants
+    return descendants.length ? new DomManipulator(descendants) : $([]);
+}
+//testing feature
+//{
+ 
+        
+//}
+//MergerElement creates an element and appends ut to the target selector.
 mergeElement(tagName, {
     attributes = {},
     text = '',
@@ -299,6 +350,7 @@ mergeElement(tagName, {
 
   }
 
+// animations start
  fadeIn(duration = 1000) {
          this.elements.forEach(element => {
                  element.style.opacity = 0;
@@ -381,7 +433,68 @@ mergeElement(tagName, {
 }
 
 
+function createArray(range) {
+  if (range.match(/^\d+\.\.\.\d+$/)) { // If the range is numbers
+    const [startStr, endStr] = range.split('...');
+    const start = parseInt(startStr);
+    const end = parseInt(endStr);
+    const reverse = start > end;
+    const arr = [];
 
+    if (reverse) {
+      for (let i = start; i >= end; i--) {
+        arr.push(i);
+      }
+    } else {
+      for (let i = start; i <= end; i++) {
+        arr.push(i);
+      }
+    }
+
+    return arr;
+  } else if (range.match(/^[a-zA-Z]\.\.\.[a-zA-Z]$/)) { // If the range is letters
+    const [start, end] = range.split('...');
+    const startCode = start.charCodeAt(0);
+    const endCode = end.charCodeAt(0);
+    const reverse = startCode > endCode;
+    const arr = [];
+
+    if (reverse) {
+      for (let i = startCode; i >= endCode; i--) {
+        arr.push(String.fromCharCode(i));
+      }
+    } else {
+      for (let i = startCode; i <= endCode; i++) {
+        arr.push(String.fromCharCode(i));
+      }
+    }
+
+    return arr;
+  } else { // If the range is invalid
+    throw new Error('Invalid range');
+  }
+}
+//functions
+function createRipple(event) {
+        const button = event.currentTarget;
+
+        const circle = document.createElement("span");
+        const diameter = Math.max(button.clientWidth, button.clientHeight);
+        const radius = diameter / 2;
+
+        circle.style.width = circle.style.height = `${diameter}px`;
+        circle.style.left = `${event.clientX - button.offsetLeft - radius}px`;
+        circle.style.top = `${event.clientY - button.offsetTop - radius}px`;
+        circle.classList.add("ripple");
+
+        const ripple = button.getElementsByClassName("ripple")[0];
+
+        if (ripple) {
+                ripple.remove();
+        }
+
+        button.appendChild(circle);
+}
 function el(selector) {
   return new DomManipulator(selector);
 }
@@ -390,8 +503,11 @@ function $(selector) {
 }
 window.Aestron = {
   DomManipulator,
+  createArray,
   el,
-  $
+  $,
+  createRipple
 };
+
 
 
